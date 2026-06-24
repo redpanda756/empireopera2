@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Performance Cast Calendar</title>
+<style>
+  :root {
+    --ink: #1c1a17;
+    --paper: #f6f1e7;
+    --maroon: #6e1423;
+    --gold: #9c7a3c;
+    --rule: #c9bfa8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Georgia', 'Iowan Old Style', serif;
+    padding: 48px 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .program {
+    width: 100%;
+    max-width: 640px;
+  }
+  .eyebrow {
+    text-align: center;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 34px;
+    font-weight: 400;
+    margin: 0 0 4px;
+    letter-spacing: 0.02em;
+  }
+  .subtitle {
+    text-align: center;
+    font-style: italic;
+    color: #5b5648;
+    margin-bottom: 32px;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 28px 0;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--maroon);
+    margin-bottom: 8px;
+  }
+  select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 18px;
+    padding: 12px 14px;
+    border: 1px solid var(--rule);
+    background: #fffdf9;
+    color: var(--ink);
+    border-radius: 2px;
+    appearance: none;
+  }
+  .cast-block { margin-top: 32px; }
+  .role-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px dotted var(--rule);
+  }
+  .role-row:last-child { border-bottom: none; }
+  .role-name {
+    font-style: italic;
+    color: #5b5648;
+    font-size: 15px;
+  }
+  .performer-name {
+    font-size: 17px;
+    text-align: right;
+  }
+  .empty {
+    text-align: center;
+    color: #8a8370;
+    font-style: italic;
+    padding: 24px 0;
+  }
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #a39c87;
+    margin-top: 40px;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+<div class="program">
+  <div class="eyebrow">Cast Calendar</div>
+  <h1>Tonight's Performance</h1>
+  <div class="subtitle">Select a date to see who is singing</div>
+
+  <hr class="divider">
+
+  <label for="date-select">Performance Date</label>
+  <select id="date-select"></select>
+
+  <div class="cast-block" id="cast-block"></div>
+
+  <footer>EDIT THE "shows" OBJECT BELOW TO ADD YOUR OWN DATES &amp; CAST</footer>
+</div>
+
+<script>
+  // ---------------------------------------------------------------
+  // EDIT THIS DATA. Add one entry per performance date.
+  // Date format: "YYYY-MM-DD". Cast: array of {role, performer}.
+  // ---------------------------------------------------------------
+  const shows = {
+    "2026-09-12": {
+      title: "Opening Night",
+      cast: [
+        { role: "Violetta", performer: "Jane Soprano" },
+        { role: "Alfredo", performer: "Mark Tenor" },
+        { role: "Giorgio Germont", performer: "Paul Baritone" },
+        { role: "Conductor", performer: "Lena Maestro" }
+      ]
+    },
+    "2026-09-16": {
+      title: "Matinee",
+      cast: [
+        { role: "Violetta", performer: "Alice Understudy" },
+        { role: "Alfredo", performer: "Mark Tenor" },
+        { role: "Giorgio Germont", performer: "Sam Bass" },
+        { role: "Conductor", performer: "Lena Maestro" }
+      ]
+    },
+    "2026-09-20": {
+      title: "Evening Performance",
+      cast: [
+        { role: "Violetta", performer: "Jane Soprano" },
+        { role: "Alfredo", performer: "Diego Lyric" },
+        { role: "Giorgio Germont", performer: "Paul Baritone" },
+        { role: "Conductor", performer: "Tomás Pace" }
+      ]
+    }
+  };
+  // ---------------------------------------------------------------
+
+  const select = document.getElementById('date-select');
+  const castBlock = document.getElementById('cast-block');
+
+  function formatDate(iso) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    return dt.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function populateDropdown() {
+    const dates = Object.keys(shows).sort();
+    select.innerHTML = '';
+    dates.forEach(iso => {
+      const opt = document.createElement('option');
+      opt.value = iso;
+      opt.textContent = formatDate(iso);
+      select.appendChild(opt);
+    });
+  }
+
+  function renderCast(iso) {
+    const show = shows[iso];
+    castBlock.innerHTML = '';
+    if (!show) {
+      castBlock.innerHTML = '<div class="empty">No performance scheduled on this date.</div>';
+      return;
+    }
+    show.cast.forEach(({ role, performer }) => {
+      const row = document.createElement('div');
+      row.className = 'role-row';
+      row.innerHTML = `<span class="role-name">${role}</span><span class="performer-name">${performer}</span>`;
+      castBlock.appendChild(row);
+    });
+  }
+
+  select.addEventListener('change', () => renderCast(select.value));
+
+  populateDropdown();
+  if (select.options.length) {
+    select.value = select.options[0].value;
+    renderCast(select.value);
+  }
+</script>
+</body>
+</html>
